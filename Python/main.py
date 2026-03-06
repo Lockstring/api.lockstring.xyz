@@ -101,4 +101,4 @@ async def check2(info: Check2, db: Session = Depends(get_db)):
     session.used = True
     db.commit()
 
-    return "print('bad session2')"
+    return "print('bad signature')"

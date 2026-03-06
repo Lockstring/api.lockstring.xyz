@@ -144,7 +144,7 @@ do
 
     local HttpService = game:GetService("HttpService")
 
-    local URL1 = "https://222f-2a09-bac6-d840-26d2-00-3de-f.ngrok-free.app/check/1"
+    local URL1 = "https://858c-2a09-bac6-d843-d2-00-15-400.ngrok-free.app/check/1"
 
     local HttpRequest = http_request or request or (http and http.request)
     local Response = HttpRequest({
@@ -193,14 +193,11 @@ do
 
         if session_hmac == sig then
             real_session = session
-            print("Real session found:", real_session)
+            --found real session
             break
         end
     end
-
-    print(Response.Body)
-    print(hex)
-
+    
     local signed = nil
 
     if real_session then
@@ -227,7 +224,7 @@ do
         end)
     end
 
-    local URL2 = "https://222f-2a09-bac6-d840-26d2-00-3de-f.ngrok-free.app/check/2"
+    local URL2 = "https://858c-2a09-bac6-d843-d2-00-15-400.ngrok-free.app/check/2"
 
     local Response = HttpRequest({
         Url = URL2,
