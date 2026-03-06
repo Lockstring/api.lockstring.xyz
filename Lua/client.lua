@@ -1,3 +1,7 @@
+if not skey then
+    return print("skey not found!")
+end
+
 do
     local bit = bit32
     local byte = string.byte
@@ -144,7 +148,7 @@ do
 
     local HttpService = game:GetService("HttpService")
 
-    local URL1 = "https://858c-2a09-bac6-d843-d2-00-15-400.ngrok-free.app/check/1"
+    local URL1 = "https://e77e-2a09-bac1-28e0-840-00-3d9-42.ngrok-free.app/check/1"
 
     local HttpRequest = http_request or request or (http and http.request)
     local Response = HttpRequest({
@@ -156,13 +160,15 @@ do
         Body = string.format('{"key":"%s","hwid":"%s"}',skey,hex)
     })
 
+    print(Response.Body)
+
     local data = HttpService:JSONDecode(Response.Body)
 
     local real_session = nil
 
     for _, entry in ipairs(data.responses) do
-        local session = entry.session
-        local sig = entry.sig
+        local session = entry.a
+        local sig = entry.b
 
         local block = 64
         local k = base_key
@@ -194,6 +200,7 @@ do
         if session_hmac == sig then
             real_session = session
             --found real session
+            print(real_session)
             break
         end
     end
@@ -224,7 +231,7 @@ do
         end)
     end
 
-    local URL2 = "https://858c-2a09-bac6-d843-d2-00-15-400.ngrok-free.app/check/2"
+    local URL2 = "https://e77e-2a09-bac1-28e0-840-00-3d9-42.ngrok-free.app/check/2"
 
     local Response = HttpRequest({
         Url = URL2,

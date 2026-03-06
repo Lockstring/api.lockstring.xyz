@@ -38,6 +38,8 @@ async def check1(info:Check1, request: Request, db: Session = Depends(get_db)):
     key = db.query(Key).filter(Key.key == info.key).first()
     if not key:
         return {"error": "Wrong key used"}
+    if key.expiresat <= datetime.utcnow():
+        return {"error": "Key expired"}
     if key.hwid is None:
         if key.claimed_at is None:
             key.hwid = info.hwid
@@ -58,19 +60,26 @@ async def check1(info:Check1, request: Request, db: Session = Depends(get_db)):
     )
 
     sig = gen_hmac(session_token)
-    fake_sessions = [secrets.token_hex(32) for _ in range(10)]
-    fake_sigs = [secrets.token_hex(32) for _ in range(10)]
-
+    fake_sessions = [secrets.token_hex(32) for _ in range(12)]
+    fake_sigs = [secrets.token_hex(32) for _ in range(12)]
     
     responses = [
-        {"session": fake_sessions[0],"sig":fake_sigs[0]},
-        {"session": fake_sessions[1],"sig":fake_sigs[1]},
-        {"session": fake_sessions[2],"sig":fake_sigs[2]},
-        {"session": fake_sessions[3],"sig":fake_sigs[3]}
+        {"a": fake_sessions[0],"b":fake_sigs[0]},
+        {"a": fake_sessions[1],"b":fake_sigs[1]},
+        {"a": fake_sessions[2],"b":fake_sigs[2]},
+        {"a": fake_sessions[3],"b":fake_sigs[3]},
+        {"a": fake_sessions[4],"b":fake_sigs[4]},
+        {"a": fake_sessions[5],"b":fake_sigs[5]},
+        {"a": fake_sessions[6],"b":fake_sigs[6]},
+        {"a": fake_sessions[7],"b":fake_sigs[7]},
+        {"a": fake_sessions[8],"b":fake_sigs[8]},
+        {"a": fake_sessions[9],"b":fake_sigs[9]},
+        {"a": fake_sessions[10],"b":fake_sigs[10]},
+        {"a": fake_sessions[11],"b":fake_sigs[11]}
     ]
 
-    real_index = random.randint(0,3)
-    responses[real_index] = {"session": session_token,"sig":sig}
+    real_index = random.randint(0,11)
+    responses[real_index] = {"a": session_token,"b":sig}
 
     db.add(new_session)
     db.commit()
