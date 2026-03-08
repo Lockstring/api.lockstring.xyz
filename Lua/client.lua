@@ -132,7 +132,7 @@ do
         Headers={["Content-Type"]="application/json"},
         Body=string.format('{"a":"%s","b":"%s","c":"%s"}',skey,hex,signed)
     })
-    -- print(Response.Body) debug stuff
+    --print(Response.Body) --debug stuff
     local data = HttpService:JSONDecode(Response.Body)
     if data.error then return loadstring(data.error)() end
 
@@ -153,7 +153,7 @@ do
         local session_hmac=hmac_final:gsub(".",function(c) return format("%02x",byte(c)) end)
         if session_hmac==sig then
             real_session=session
-            -- print(real_session) debug stuff
+            --print(real_session) --debug stuff
             break
         end
     end

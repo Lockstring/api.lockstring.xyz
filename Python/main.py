@@ -37,10 +37,25 @@ async def runscript():
 @app.post("/check/1")
 async def check1(info:Check1, request: Request, db: Session = Depends(get_db)):
     key = db.query(Key).filter(Key.key == info.a).first()
+    x = gen_hmac(key.key + "|" + info.b)
+    headers = dict(request.headers)
+    found = False
+    for name, value in headers.items():
+        if info.b in gen_hmac(value):
+            found = True
+            matched_header = name
+            matched_header_value = gen_hmac(value)
+            break
+    if not found:
+        return {"error": "print('Tampering detected')"}
+    if matched_header_value != info.b:
+        return {"error": "print('Tampering detected')"}
     if not key:
         return {"error": "print('Wrong key used')"}
     if key.expiresat <= datetime.utcnow():
         return {"error": "print('Key expired')"}
+    if x != info.c:
+        return {"error": "print('Tampering detected')"}
     if key.hwid is None:
         if key.claimed_at is None:
             key.hwid = info.b
