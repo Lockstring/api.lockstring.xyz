@@ -2,8 +2,9 @@ from pydantic import BaseModel
 
 
 class Check1(BaseModel):
-    key: str
-    hwid:str
+    a: str # hashed key
+    b:str # hashed hwid
+    c: str # hmac sig
     
 class Check2(BaseModel):
     key: str

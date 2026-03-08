@@ -18,6 +18,7 @@ async def create_key(info: CreateKey, db: Session = Depends(get_db)):
     newkey = Key(
         key=key_value,
         script_uid=1,
+        hashed_key=gen_hmac(key_value),
         expiresat=datetime.utcnow() + timedelta(minutes=info.mins)
     )
 
@@ -35,20 +36,20 @@ async def runscript():
 
 @app.post("/check/1")
 async def check1(info:Check1, request: Request, db: Session = Depends(get_db)):
-    key = db.query(Key).filter(Key.key == info.key).first()
+    key = db.query(Key).filter(Key.key == info.a).first()
     if not key:
-        return {"error": "Wrong key used"}
+        return {"error": "print('Wrong key used')"}
     if key.expiresat <= datetime.utcnow():
-        return {"error": "Key expired"}
+        return {"error": "print('Key expired')"}
     if key.hwid is None:
         if key.claimed_at is None:
-            key.hwid = info.hwid
+            key.hwid = info.b
             key.claimed_at = datetime.utcnow()
             db.commit()
         else:
-            return {"error": "Tampering detected"}
-    if key.hwid != info.hwid:
-        return {"error": "HWID mismatch"}
+            return {"error": "print('Tampering detected')"}
+    if key.hwid != info.b:
+        return {"error": "print('HWID mismatch')"}
     session_token = secrets.token_hex(32)
     new_session = Session(
         token=session_token,

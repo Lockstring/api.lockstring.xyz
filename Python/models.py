@@ -18,6 +18,7 @@ class Key(Base):
     __tablename__ = "keys"
 
     key = Column(String, primary_key=True, index=True)
+    hashed_key = Column(String, primary_key=True, index=True)
     script_uid = Column(Integer, ForeignKey("scripts.uid"), index=True, nullable=False)
     hwid = Column(String, index=True)
 
