@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, Boolean, ForeignKey
+from sqlalchemy import Column, Integer, String, DateTime, Boolean, ForeignKey, LargeBinary
 from sqlalchemy.orm import relationship
 from Python.database import Base
 from datetime import datetime
@@ -8,9 +8,9 @@ class Script(Base):
 
     uid = Column(Integer, primary_key=True, index=True)
     name = Column(String, index=True, nullable=False)
-    script = Column(String, nullable=False)
+    script = Column(LargeBinary, nullable=False)
     executions = Column(Integer, default=0, nullable=False)
-
+    script_url = Column(String, index=True, nullable=False)
     keys = relationship("Key", back_populates="script_obj", cascade="all, delete")
 
 

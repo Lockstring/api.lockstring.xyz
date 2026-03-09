@@ -13,3 +13,7 @@ class Check2(BaseModel):
 class CreateKey(BaseModel):
     key: str
     mins: int
+
+class CreateScript(BaseModel):
+    name: str
+    script: str

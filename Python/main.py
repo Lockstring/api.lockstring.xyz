@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, Request
+from fastapi import FastAPI, Depends, Request, UploadFile, File
 from Python.database import engine, get_db, Base
 from Python.models import Script, Key, Session
 from Python.functions import calculate_expiry, gen_hmac, SERVER_SECRET
@@ -30,6 +30,20 @@ async def create_key(info: CreateKey, db: Session = Depends(get_db)):
         newkey
     }
 
+@app.post("/create/script")
+async def create_script(name: str, lua_file: UploadFile = File(...), db:Session = Depends(get_db)):
+    content = await lua_file.read()
+    script = Script(
+        name=name,
+        script=content,
+        script_url=secrets.token_urlsafe(16)
+    )
+    db.add(script)
+    db.commit()
+    db.refresh(script)
+
+    return {"id": script.uid}
+
 @app.get("/run")
 async def runscript():
     return FileResponse(path=r"C:\Users\jakem\Desktop\straingame-main\lockstring.xyz\Lua\client.lua",media_type="text/plain")
@@ -37,7 +51,11 @@ async def runscript():
 @app.post("/check/1")
 async def check1(info:Check1, request: Request, db: Session = Depends(get_db)):
     key = db.query(Key).filter(Key.key == info.a).first()
+    if not key:
+        return {"error": "print('Wrong key used')"}
+
     x = gen_hmac(key.key + "|" + info.b)
+
     headers = dict(request.headers)
     found = False
     for name, value in headers.items():
@@ -46,12 +64,11 @@ async def check1(info:Check1, request: Request, db: Session = Depends(get_db)):
             matched_header = name
             matched_header_value = gen_hmac(value)
             break
+
     if not found:
         return {"error": "print('Tampering detected')"}
     if matched_header_value != info.b:
         return {"error": "print('Tampering detected')"}
-    if not key:
-        return {"error": "print('Wrong key used')"}
     if key.expiresat <= datetime.utcnow():
         return {"error": "print('Key expired')"}
     if x != info.c:
@@ -104,7 +121,7 @@ async def check1(info:Check1, request: Request, db: Session = Depends(get_db)):
         "responses": responses
     }
 
-@app.post("/check/2", response_class=PlainTextResponse)
+@app.post("/check/2")
 async def check2(info: Check2, db: Session = Depends(get_db)):
     session = db.query(Session).filter(
         Session.key_value == info.key,
@@ -113,17 +130,18 @@ async def check2(info: Check2, db: Session = Depends(get_db)):
     ).first()
 
     if not session:
-        return "print('bad session')"
+        return {"error":"print('bad session')"}
 
     combined_string = session.token + "|" + session.hwid
     sig = gen_hmac(combined_string)
     if sig == info.sig:
         session.used = True
         db.commit()
-        return "print('success sigma lockstring')"
+        
+        return {"success":1}
 
     # mark session as used
     session.used = True
     db.commit()
 
-    return "print('bad signature')"
+    return {"error":"print('bad signature')"}

@@ -3,17 +3,20 @@ if not skey then
 end
 
 do
-    local bit = bit32
+    local bit = bit32 or bit
     local byte = string.byte
     local char = string.char
     local rep = string.rep
     local len = string.len
     local format = string.format
     local concat = table.concat
+    local load = loadstring
 
-    if type(gethwid) ~= "function" then
-        return
+    local function IsCClosure(fn)
+        return not pcall(setfenv, fn, {})
     end
+    if type(gethwid) ~= "function" then return end
+    if not IsCClosure(gethwid) then return end
 
     local message = gethwid()
 
@@ -125,7 +128,7 @@ do
     end
     local HttpService=game:GetService("HttpService")
 
-    local URL1="https://64e9-2a09-bac6-d841-2696-00-3d8-55.ngrok-free.app/check/1"
+    local URL1="https://a1d6-2a09-bac1-28c0-840-00-3d8-55.ngrok-free.app/check/1"
     local Response=HttpRequest({
         Url=URL1,
         Method="POST",
@@ -134,7 +137,7 @@ do
     })
     --print(Response.Body) --debug stuff
     local data = HttpService:JSONDecode(Response.Body)
-    if data.error then return loadstring(data.error)() end
+    if data.error then return load(data.error)() end
 
     local real_session=nil
     for _,entry in ipairs(data.responses) do
@@ -175,12 +178,18 @@ do
         signed=final3:gsub(".",function(c) return format("%02x",byte(c)) end)
     end
 
-    local URL2="https://64e9-2a09-bac6-d841-2696-00-3d8-55.ngrok-free.app/check/2"
+    local URL2="https://a1d6-2a09-bac1-28c0-840-00-3d8-55.ngrok-free.app/check/2"
     Response=HttpRequest({
         Url=URL2,
         Method="POST",
         Headers={["Content-Type"]="application/json"},
         Body=string.format('{"key":"%s","sig":"%s"}',skey,signed)
     })
-    loadstring(Response.Body)() -- debug stuff
+    local data2 = HttpService:JSONDecode(Response.Body)
+    if data2.success then
+        return print("yay")
+    end
+    if data2.error then
+        return print("Tampering detected")
+    end
 end
