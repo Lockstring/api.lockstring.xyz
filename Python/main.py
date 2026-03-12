@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Depends, Request, UploadFile, File
 from Python.database import engine, get_db, Base
 from Python.models import Script, Key, Session
-from Python.functions import calculate_expiry, gen_hmac, SERVER_SECRET
+from Python.functions import calculate_expiry, gen_hmac
 from Python.schemas import Check1, Check2, CreateKey
 from datetime import datetime, timedelta
 from fastapi.responses import FileResponse, PlainTextResponse
@@ -13,12 +13,18 @@ Base.metadata.create_all(bind=engine)
 
 @app.post("/create/key")
 async def create_key(info: CreateKey, db: Session = Depends(get_db)):
+    script = db.query(Script).filter(Script.uid == info.scriptuid).first()
+
+    if not script:
+        return {"error":"not found"}
+    
     key_value = secrets.token_hex(16)
 
     newkey = Key(
         key=key_value,
-        script_uid=1,
-        hashed_key=gen_hmac(key_value),
+        script_uid=info.scriptuid,
+        script_url=script.script_url,
+        hashed_key=gen_hmac(key_value,script.nonce),
         expiresat=datetime.utcnow() + timedelta(minutes=info.mins)
     )
 
@@ -33,9 +39,18 @@ async def create_key(info: CreateKey, db: Session = Depends(get_db)):
 @app.post("/create/script")
 async def create_script(name: str, lua_file: UploadFile = File(...), db:Session = Depends(get_db)):
     content = await lua_file.read()
+    with open(r"C:\Users\jakem\Desktop\straingame-main\lockstring.xyz\Lua\client.lua", "r") as f:
+        lua = f.read()
+    nonce = secrets.token_hex(32)
+    parts = [nonce[i:i+16] for i in range(0, 64, 16)]
+    for i, part in enumerate(parts):
+        lua = lua.replace(f"%PLACEHOLDER{i}%", part)
+    script_content = content.decode().replace("]=]", "] = ]")
+    lua = lua.replace("%SCRIPT%", script_content)
     script = Script(
         name=name,
-        script=content,
+        nonce=nonce,
+        script=lua.encode(),
         script_url=secrets.token_urlsafe(16)
     )
     db.add(script)
@@ -44,25 +59,31 @@ async def create_script(name: str, lua_file: UploadFile = File(...), db:Session 
 
     return {"id": script.uid}
 
-@app.get("/run")
-async def runscript():
-    return FileResponse(path=r"C:\Users\jakem\Desktop\straingame-main\lockstring.xyz\Lua\client.lua",media_type="text/plain")
+@app.get("/{scripturl}/run", response_class=PlainTextResponse)
+async def runscript(scripturl: str, db: Session = Depends(get_db)):
+    script = db.query(Script).filter(Script.script_url == scripturl).first()
+
+    if not script:
+        return "script not found"
+
+    return script.script.decode()
 
 @app.post("/check/1")
 async def check1(info:Check1, request: Request, db: Session = Depends(get_db)):
     key = db.query(Key).filter(Key.key == info.a).first()
     if not key:
         return {"error": "print('Wrong key used')"}
+    script = db.query(Script).filter(Script.script_url == key.script_url).first()
 
-    x = gen_hmac(key.key + "|" + info.b)
+    x = gen_hmac(key.key + "|" + info.b,script.nonce)
 
     headers = dict(request.headers)
     found = False
     for name, value in headers.items():
-        if info.b in gen_hmac(value):
+        if info.b in gen_hmac(value,script.nonce):
             found = True
             matched_header = name
-            matched_header_value = gen_hmac(value)
+            matched_header_value = gen_hmac(value,script.nonce)
             break
 
     if not found:
@@ -92,7 +113,7 @@ async def check1(info:Check1, request: Request, db: Session = Depends(get_db)):
         used=False
     )
 
-    sig = gen_hmac(session_token)
+    sig = gen_hmac(session_token,script.nonce)
     fake_sessions = [secrets.token_hex(32) for _ in range(12)]
     fake_sigs = [secrets.token_hex(32) for _ in range(12)]
     
@@ -131,14 +152,27 @@ async def check2(info: Check2, db: Session = Depends(get_db)):
 
     if not session:
         return {"error":"print('bad session')"}
+    
+    key = db.query(Key).filter(Key.key == session.key_value).first()
+    script = db.query(Script).filter(Script.script_url == key.script_url).first()
 
     combined_string = session.token + "|" + session.hwid
-    sig = gen_hmac(combined_string)
+    sig = gen_hmac(combined_string, script.nonce)
+    real = [secrets.token_hex(32) for _ in range(8)]
+    responses = [
+        {"a":real[0],"b":real[4]},
+        {"a":real[1],"b":real[5]},
+        {"a":real[2],"b":real[6]},
+        {"a":real[3],"b":real[7]}
+    ]
     if sig == info.sig:
         session.used = True
         db.commit()
-        
-        return {"success":1}
+        real_index = random.randint(0,3)
+        test = real_index+4
+        responses[real_index] = {"a":gen_hmac(real[test],script.nonce),"b":real[test]}
+        print(responses)
+        return responses
 
     # mark session as used
     session.used = True

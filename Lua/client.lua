@@ -1,6 +1,19 @@
+local REVEAL_HINT_STACK = false
+local ANTI_ENV_LOG_MESSAGE =
+[[
+    stop tampering!!
+]]
+if not getmetatable or not setmetatable or not type or not select or type(select(2, pcall(getmetatable, setmetatable({}, {__index = function(self, ...) while true do end end})))['__index']) ~= 'function' or not pcall or not debug or not rawget or not rawset or not pcall(rawset,{}," "," ") or not select or not getfenv or select(1, pcall(getfenv, 69)) == true or not select(2, pcall(rawget, debug, "info")) or #(((select(2, pcall(rawget, debug, "info")))(getfenv, "n")))<=1 or #(((select(2, pcall(rawget, debug, "info")))(print, "n")))<=1 or not (select(2, pcall(rawget, debug, "info")))(print, "s") == "[C]" or not (select(2, pcall(rawget, debug, "info")))(require, "s") == "[C]" or (select(2, pcall(rawget, debug, "info")))((function()end), "s") == "[C]" then
+  return REVEAL_HINT_STACK and tostring(ANTI_ENV_LOG_MESSAGE) or nil
+end
+
 if not skey then
     return print("skey not found!")
 end
+
+local script_code = [=[
+%SCRIPT%
+]=]
 
 do
     local bit = bit32 or bit
@@ -21,10 +34,10 @@ do
     local message = gethwid()
 
     -- convert secret hex to key
-    local s1="3b66bf61c557262a"
-    local s2="c490aa6a8db0142b"
-    local s3="8546dab39ff14ce8"
-    local s4="e6666f9f0458ced8"
+    local s1="%PLACEHOLDER0%"
+    local s2="%PLACEHOLDER1%"
+    local s3="%PLACEHOLDER2%"
+    local s4="%PLACEHOLDER3%"
     local secret_hex = s1..s2..s3..s4
     local key_bytes = {}
     for i=1,#secret_hex,2 do
@@ -128,7 +141,7 @@ do
     end
     local HttpService=game:GetService("HttpService")
 
-    local URL1="https://a1d6-2a09-bac1-28c0-840-00-3d8-55.ngrok-free.app/check/1"
+    local URL1="https://fb32-2a09-bac6-d847-1f19-00-319-114.ngrok-free.app/check/1"
     local Response=HttpRequest({
         Url=URL1,
         Method="POST",
@@ -177,8 +190,11 @@ do
         local final3=sha256(concat(opad2)..inner3)
         signed=final3:gsub(".",function(c) return format("%02x",byte(c)) end)
     end
+    if not real_session then
+        print("no valid session found")
+    end
 
-    local URL2="https://a1d6-2a09-bac1-28c0-840-00-3d8-55.ngrok-free.app/check/2"
+    local URL2="https://fb32-2a09-bac6-d847-1f19-00-319-114.ngrok-free.app/check/2"
     Response=HttpRequest({
         Url=URL2,
         Method="POST",
@@ -186,10 +202,36 @@ do
         Body=string.format('{"key":"%s","sig":"%s"}',skey,signed)
     })
     local data2 = HttpService:JSONDecode(Response.Body)
-    if data2.success then
-        return print("yay")
-    end
     if data2.error then
         return print("Tampering detected")
     end
+    for _, entry in ipairs(data2) do
+        local sig = entry.a
+        local message = entry.b
+
+        local k = base_key
+        if #k > 64 then k = sha256(k) end
+        if #k < 64 then k = k .. rep("\0", 64 - #k) end
+
+        local ipad2, opad2 = {}, {}
+        for i = 1, 64 do
+            local b = byte(k, i)
+            ipad2[i] = char(bit.bxor(b, 0x36))
+            opad2[i] = char(bit.bxor(b, 0x5c))
+        end
+
+        local inner = sha256(concat(ipad2) .. message)
+        local final = sha256(concat(opad2) .. inner)
+        local expected = final:gsub(".", function(c)
+            return format("%02x", byte(c))
+        end)
+
+        if expected == sig then
+            print("Authenicated successfully with lockstring.xyz")
+            load(script_code)()
+        else
+            print("invalid signature detected")
+        end
+    end
+    
 end

@@ -8,6 +8,7 @@ class Script(Base):
 
     uid = Column(Integer, primary_key=True, index=True)
     name = Column(String, index=True, nullable=False)
+    nonce = Column(String, unique=True, index=True, nullable=False)
     script = Column(LargeBinary, nullable=False)
     executions = Column(Integer, default=0, nullable=False)
     script_url = Column(String, index=True, nullable=False)
@@ -19,6 +20,7 @@ class Key(Base):
 
     key = Column(String, primary_key=True, index=True)
     hashed_key = Column(String, primary_key=True, index=True)
+    script_url = Column(String, index=True, nullable=False)
     script_uid = Column(Integer, ForeignKey("scripts.uid"), index=True, nullable=False)
     hwid = Column(String, index=True)
 
