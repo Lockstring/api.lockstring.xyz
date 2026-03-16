@@ -145,7 +145,7 @@ async def check1(info:Check1, request: Request, db: Session = Depends(get_db)):
 @app.post("/check/2")
 async def check2(info: Check2, db: Session = Depends(get_db)):
     session = db.query(Session).filter(
-        Session.key_value == info.key,
+        Session.key_value == info.a,
         Session.used == False,
         Session.expiresat > datetime.utcnow()
     ).first()
@@ -165,7 +165,7 @@ async def check2(info: Check2, db: Session = Depends(get_db)):
         {"a":real[2],"b":real[6]},
         {"a":real[3],"b":real[7]}
     ]
-    if sig == info.sig:
+    if sig == info.b:
         session.used = True
         db.commit()
         real_index = random.randint(0,3)
@@ -179,3 +179,7 @@ async def check2(info: Check2, db: Session = Depends(get_db)):
     db.commit()
 
     return {"error":"print('bad signature')"}
+
+@app.post("/check/{id}")
+async def fake_check(id:str):
+    pass

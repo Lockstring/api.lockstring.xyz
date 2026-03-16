@@ -141,7 +141,7 @@ do
     end
     local HttpService=game:GetService("HttpService")
 
-    local URL1="https://fb32-2a09-bac6-d847-1f19-00-319-114.ngrok-free.app/check/1"
+    local URL1="https://2210-104-28-163-65.ngrok-free.app/check/1"
     local Response=HttpRequest({
         Url=URL1,
         Method="POST",
@@ -194,12 +194,12 @@ do
         print("no valid session found")
     end
 
-    local URL2="https://fb32-2a09-bac6-d847-1f19-00-319-114.ngrok-free.app/check/2"
+    local URL2="https://2210-104-28-163-65.ngrok-free.app/check/2"
     Response=HttpRequest({
         Url=URL2,
         Method="POST",
         Headers={["Content-Type"]="application/json"},
-        Body=string.format('{"key":"%s","sig":"%s"}',skey,signed)
+        Body=string.format('{"a":"%s","b":"%s","c":"test"}',skey,signed)
     })
     local data2 = HttpService:JSONDecode(Response.Body)
     if data2.error then

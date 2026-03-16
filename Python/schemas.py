@@ -7,8 +7,9 @@ class Check1(BaseModel):
     c: str # hmac sig
     
 class Check2(BaseModel):
-    key: str
-    sig: str
+    a: str # key
+    b: str # sig
+    c: str # just to diguise request
 
 class CreateKey(BaseModel):
     key: str
