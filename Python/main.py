@@ -121,18 +121,10 @@ async def check1(info:Check1, request: Request, db: Session = Depends(get_db)):
         {"a": fake_sessions[0],"b":fake_sigs[0]},
         {"a": fake_sessions[1],"b":fake_sigs[1]},
         {"a": fake_sessions[2],"b":fake_sigs[2]},
-        {"a": fake_sessions[3],"b":fake_sigs[3]},
-        {"a": fake_sessions[4],"b":fake_sigs[4]},
-        {"a": fake_sessions[5],"b":fake_sigs[5]},
-        {"a": fake_sessions[6],"b":fake_sigs[6]},
-        {"a": fake_sessions[7],"b":fake_sigs[7]},
-        {"a": fake_sessions[8],"b":fake_sigs[8]},
-        {"a": fake_sessions[9],"b":fake_sigs[9]},
-        {"a": fake_sessions[10],"b":fake_sigs[10]},
-        {"a": fake_sessions[11],"b":fake_sigs[11]}
+        {"a": fake_sessions[3],"b":fake_sigs[3]}
     ]
 
-    real_index = random.randint(0,11)
+    real_index = random.randint(0,4)
     responses[real_index] = {"a": session_token,"b":sig}
 
     db.add(new_session)
