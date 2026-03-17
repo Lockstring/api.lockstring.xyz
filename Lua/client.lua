@@ -33,7 +33,6 @@ do
 
     local message = gethwid()
 
-    -- convert secret hex to key
     local s1="%PLACEHOLDER0%"
     local s2="%PLACEHOLDER1%"
     local s3="%PLACEHOLDER2%"
@@ -46,7 +45,6 @@ do
     local key = concat(key_bytes)
     local base_key = key
 
-    -- SHA256 constants
     local K={
         0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,
         0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,
@@ -66,7 +64,6 @@ do
         0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2
     }
 
-    -- SHA256 function
     local function sha256(msg)
         local H={0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,
                  0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19}
@@ -115,7 +112,6 @@ do
         return concat(out)
     end
 
-    -- prepare HMAC
     local block=64
     if #key>block then key=sha256(key) end
     if #key<block then key=key..rep("\0",block-#key) end
