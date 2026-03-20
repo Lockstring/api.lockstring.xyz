@@ -39,7 +39,7 @@ async def create_key(info: CreateKey, db: Session = Depends(get_db)):
 @app.post("/create/script")
 async def create_script(name: str, lua_file: UploadFile = File(...), db:Session = Depends(get_db)):
     content = await lua_file.read()
-    with open(r"C:\Users\jakem\Desktop\straingame-main\lockstring.xyz\Lua\client.lua", "r") as f:
+    with open(r"Lua/client.lua", "r") as f:
         lua = f.read()
     nonce = secrets.token_hex(32)
     parts = [nonce[i:i+16] for i in range(0, 64, 16)]
