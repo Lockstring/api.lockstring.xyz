@@ -29,7 +29,7 @@ do
         return not pcall(setfenv, fn, {})
     end
     if type(gethwid) ~= "function" then return end
-    if not IsCClosure(gethwid) then return end
+    -- if not IsCClosure(gethwid) then return end
 
     local message = gethwid()
 
@@ -230,7 +230,7 @@ do
             print("Authenicated successfully with lockstring.xyz")
             load(script_code)()
         else
-            print("invalid signature detected")
+            -- print("invalid signature detected") -- silently fails
         end
     end
     

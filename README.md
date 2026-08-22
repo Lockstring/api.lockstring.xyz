@@ -18,4 +18,19 @@ python -m uvicorn Python.main:app --reload
 ```
 
 ## Open hamburger menu
-go to `127.0.0.1:8000/docs` once server is there
+go to `127.0.0.1:8000/docs` once server is running then use the funcs create script, key ext. and it will work
+
+## Run loadstring
+in game run this
+```lua
+skey="[Yourkey]"
+loadstring(game:HttpGet("http://127.0.0.1:8000/[your script url]/run"))()
+```
+
+## Extra Notes
+> you would want to add obsfucation to the client automatically using a commerically sold auths api i wont suggest any specific ones
+> you will want to host it either for free locally using smthn like ngrok or u can set it up perm on cloudflare with a domain but you can figure this out urself
+> script key is a option on the api when creating key but it will be random u can change this in source
+> if it doesnt work dm me on discord @0x55_
+
+IF YOU DO HOST IT AND NOT LOCAL HOST CHANGE URLS IN CLIENT.LUA
