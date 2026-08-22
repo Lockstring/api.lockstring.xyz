@@ -173,5 +173,8 @@ async def check2(info: Check2, db: Session = Depends(get_db)):
     return {"error":"print('bad signature')"}
 
 @app.post("/check/{id}")
-async def fake_check(id:str):
-    pass
+async def fake_check(id:str, db: Session = Depends(get_db)):
+    script = db.query(Script).filter(Script.uid == id).first()
+    if not script:
+        return "noo"
+    return script

@@ -141,7 +141,7 @@ do
     end
     local HttpService=game:GetService("HttpService")
 
-    local URL1="https://3601-2a09-bac1-28a0-840-00-15-3f1.ngrok-free.app/check/1"
+    local URL1="http://127.0.0.1:8000/check/1"
     local Response=HttpRequest({
         Url=URL1,
         Method="POST",
@@ -194,7 +194,7 @@ do
         print("no valid session found")
     end
 
-    local URL2="https://3601-2a09-bac1-28a0-840-00-15-3f1.ngrok-free.app/check/2"
+    local URL2="http://127.0.0.1:8000/check/2"
     Response=HttpRequest({
         Url=URL2,
         Method="POST",
