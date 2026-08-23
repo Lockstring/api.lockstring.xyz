@@ -73,6 +73,7 @@ async def check1(info:Check1, request: Request, db: Session = Depends(get_db)):
     key = db.query(Key).filter(Key.key == info.a).first()
     if not key:
         return {"error": "print('Wrong key used')"}
+    key.executions = key.executions + 1
     script = db.query(Script).filter(Script.script_url == key.script_url).first()
 
     x = gen_hmac(key.key + "|" + info.b,script.nonce)
